@@ -11,6 +11,8 @@ public static void main(String[] args) {
 	disconnectTest();
 	writeTest();
 	writeDisconnectTest();
+	readTest();
+	readDisconnectTest();
 	System.out.println("All tests were successfull !");
 }
 
