@@ -1,0 +1,17 @@
+package code;
+
+public class Channel {
+	int read(byte[] bytes, int offset, int length) {
+		return 1;
+	}
+    int write(byte[] bytes, int offset, int length) {
+    	return 1;
+    }
+    public void disconnect() {
+    	
+    }
+    public boolean disconnected() {
+    	return false;
+    }
+
+}
