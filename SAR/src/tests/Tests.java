@@ -13,6 +13,7 @@ public static void main(String[] args) {
 	writeDisconnectTest();
 	readTest();
 	readDisconnectTest();
+	echoTest();
 	System.out.println("All tests were successfull !");
 }
 
@@ -95,5 +96,30 @@ private static void readDisconnectTest() {
     } catch (IllegalStateException e) {
     	System.out.println("TEST 9 PASSED !");
     }
+}
+
+private static void echoTest() {
+	byte[] sendBuff = new byte[255];
+	byte[] readBuff = new byte[255];
+	for(int i=0;i<255;i++) {
+		sendBuff[i] = (byte) (i+1); 
+	}
+	Broker brokerC = new Broker("test");
+	Broker brokerS = new Broker("test1");
+	
+	Channel ch = brokerC.connect("test1",8999);
+	ch.write(sendBuff, 0, sendBuff.length);
+	int read = ch.read(readBuff, 0, readBuff.length);
+	if(read<sendBuff.length) {
+	    assert false : "Read exception";
+
+	}
+	for(int i =0;i<read;i++) {
+		if(sendBuff[i]!=readBuff[i]) {
+		    assert false : "Read exception";
+
+		}
+	}
+	ch.disconnect();
 }
 }
