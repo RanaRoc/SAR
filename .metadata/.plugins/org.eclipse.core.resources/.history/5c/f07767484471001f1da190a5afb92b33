@@ -1,0 +1,40 @@
+package tests;
+
+import code.Broker;
+import code.Channel;
+
+public class Tests {
+public static void main(String[] args) {
+	successfullyConnectedTest();
+	failingConnectionTest();
+	disconnectTest();
+	System.out.println("All tests were successfull !");
+}
+
+private static void successfullyConnectedTest() {
+	Broker client = new Broker("Client");
+	Broker server = new Broker("Server");
+	Channel channel = client.connect("Server",2024);
+	assert(channel!=null) : " This should normally return a non-null channel, there is an error with the connect method";
+	System.out.println("TEST 1 PASSED !");
+}
+
+private static void failingConnectionTest() {
+	Broker client = new Broker("Client");
+	Channel channel = client.connect("DoesntExist",4048);
+	assert(channel==null) : " This should normally return a null channel, there is an error with the connect method";
+	System.out.println("TEST 2 PASSED !");
+
+}
+
+private static void disconnectTest() {
+	Broker client = new Broker("Client");
+	Broker server = new Broker("Server");
+	Channel channel = client.connect("Server",2024);
+	channel.disconnect();
+	assert(channel.disconnected()) : "Disconnect should normally return true, check an error in disconnect or disconnected";
+	System.out.println("TEST 3 PASSED !");
+
+}
+
+}
