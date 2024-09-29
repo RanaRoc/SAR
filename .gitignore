@@ -3,4 +3,11 @@
 
 # Log file
 *.log
+<<<<<<< HEAD
 /.metadata/
+=======
+
+
+# Ignore .metadata directory
+.metadata/
+>>>>>>> task1.tests
