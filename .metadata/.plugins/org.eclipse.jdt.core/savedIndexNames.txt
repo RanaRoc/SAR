@@ -1,4 +1,0 @@
-INDEX VERSION 1.134+/home/rana/Documents/cours/SAR/cours1/info5.sar/.metadata/.plugins/org.eclipse.jdt.core
-1865797976.index
-3352965088.index
-3689463297.index
