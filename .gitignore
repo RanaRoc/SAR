@@ -3,5 +3,9 @@
 
 # Log file
 *.log
+<<<<<<< HEAD
 
 .metadata/
+=======
+/.metadata/
+>>>>>>> 5767b989eaaee77ec8717119a39a06d588c3c854
