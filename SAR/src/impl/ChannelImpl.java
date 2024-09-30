@@ -4,13 +4,12 @@ import code.Broker;
 import code.Channel;
 
 public class ChannelImpl extends Channel {
-	int port;
 	String name;
 	ChannelImpl ch;
-	private CircularBuffer buffR;
-	private CircularBuffer buffW;
-	private boolean disconnected = false;
-	private boolean waiting;
+	protected CircularBuffer buffR;
+	protected CircularBuffer buffW;
+	protected boolean disconnected = false;
+	protected boolean waiting;
 
 	public ChannelImpl(Broker br, int port) {
 		super(br);

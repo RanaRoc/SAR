@@ -1,7 +1,9 @@
 package code;
 
 public abstract class Channel {
-	Broker br;
+	public Broker br;
+	public int port;
+
 	public Channel(Broker br) {
 		this.br = br;
 	}
