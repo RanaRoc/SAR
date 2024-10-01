@@ -18,6 +18,7 @@ this.bm = bm;
 @Override
 public Channel accept(int port) {
 	Rdv rdv = null;
+	System.out.println("Attempting accept");
 	synchronized(Rdvs) {
 		rdv = Rdvs.get(port);
 		if(rdv!=null) {
@@ -26,6 +27,7 @@ public Channel accept(int port) {
 		}
 		rdv = new Rdv();
 		Rdvs.put(port, rdv);
+
 		Rdvs.notifyAll();
 	}
 	Channel ch;

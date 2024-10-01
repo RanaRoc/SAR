@@ -5,9 +5,7 @@ import code.Channel;
 
 public class ChannelImpl extends Channel {
 	String name;
-	ChannelImpl ch;
-	protected CircularBuffer buffR;
-	protected CircularBuffer buffW;
+	
 	protected boolean disconnected = false;
 	protected boolean waiting;
 
