@@ -1,17 +1,12 @@
 package code;
 
-import code.Broker;
 
 abstract class Task extends Thread {
-Task(Broker b, Runnable r){
-	
-}
-Task(QueueBroker b, Runnable r){
-	
-}
-abstract Broker getBroker();
-abstract QueueBroker getQueueBroker();
- static Task getTask() {
+
+abstract void post(Runnable r);
+ static Task task() {
 	 return null;
  }
+abstract void kill();
+abstract boolean killed();
 }

@@ -1,18 +1,25 @@
 package code;
 
 public class QueueBroker extends Broker{
- public QueueBroker(Broker broker) {
+ public QueueBroker(String name) {
 	 super(null, "");
  }
- String name() {
-	return Name;
-	 
+ 
+ public interface AcceptListener {
+	 void accepted(MessageQueue queue);
  }
-public  MessageQueue accept(int port) {
-	return null;
-	
-}
-public  MessageQueue connect(String name, int port) {
-	return null;
-}
+  public boolean bind(int port, AcceptListener listener) {
+	  return false;
+  }
+  boolean unbind(int port) {
+	 return false;
+ }
+
+ public interface ConnectListener {
+	 void connected(MessageQueue queue);
+	 void refused();
+ }
+  public boolean connect(String name, int port, ConnectListener listener) {
+	  return false;
+  }
 }
