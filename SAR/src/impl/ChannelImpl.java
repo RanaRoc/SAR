@@ -7,8 +7,8 @@ public class ChannelImpl extends Channel {
 	int port;
 	String name;
 	ChannelImpl ch;
-	private CircularBuffer buffR;
-	private CircularBuffer buffW;
+	public CircularBuffer buffR;
+	public CircularBuffer buffW;
 	private boolean disconnected = false;
 	private boolean waiting;
 
@@ -16,6 +16,14 @@ public class ChannelImpl extends Channel {
 		super(br);
 		this.port = port;
 		this.buffR = new CircularBuffer(64);
+	}
+
+	public ChannelImpl() {
+		super(null);
+			this.buffR = new CircularBuffer(64);
+			this.disconnected = false;
+			this.waiting = false;
+		
 	}
 
 	void connect(ChannelImpl ch, String name) {

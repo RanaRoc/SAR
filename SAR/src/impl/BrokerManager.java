@@ -5,7 +5,11 @@ import java.util.Map;
 
 public class BrokerManager {
 Map<String,BrokerImpl> brokers;
+private static final BrokerManager INSTANCE = new BrokerManager();
 
+public static BrokerManager getInstance() {
+	return INSTANCE;
+}
 public BrokerManager() {
 	this.brokers = new HashMap<>();
 }
@@ -20,4 +24,5 @@ public void removeBroker(BrokerImpl br) {
 public BrokerImpl getBroker(String Name) {
 	return brokers.get(Name);
 }
+
 }

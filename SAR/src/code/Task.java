@@ -1,22 +1,29 @@
 package code;
 
-import code.Broker;
 
-public class Task extends Thread {
-    private final Broker broker;
-    private final Runnable task;
+public abstract class Task extends Thread{
+	
+	private QueueBroker br;
+	private Runnable r;
+	
+	public Task(QueueBroker broker, Runnable runnable) {
+		this.br = broker;
+		this.r = runnable;
+	}
+		 	
+	protected QueueBroker getBroker() {
+		return this.br;
+	}
+	
+	protected static Task getTask() {
+		return (Task) Thread.currentThread();
+	}
 
-    public Task(Broker broker, Runnable task) {
-        this.broker = broker;
-        this.task = task;
-    }
+	@Override
+	public void run() {
+		this.r.run();
+	}
+	
 
-    public Broker getBroker() {
-        return broker;
-    }
-
-    @Override
-    public void run() {
-        task.run();
-    }
 }
+

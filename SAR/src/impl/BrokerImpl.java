@@ -12,7 +12,6 @@ public BrokerManager bm;
 public BrokerImpl(BrokerManager bm,String Name) {
 super(Name);
 this.bm = bm;
-	bm.registerBroker(this);
 }
 
 @Override
