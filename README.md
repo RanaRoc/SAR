@@ -1,125 +1,107 @@
+# 1. Introduction
 
-**QueueBroker Class**
-The QueueBroker class is an abstract class that provides a framework for managing message queues. It includes methods for binding and unbinding to ports, as well as connecting to other message queues. The class also defines interfaces for handling acceptance and connection events. This class is designed to be thread-safe and should handle synchronization to ensure consistent state across multiple threads.
+An event-based broker and channel system is crucial for distributed systems that utilize asynchronous communication between actors. The system ensures the reliable transmission of events (messages) between distributed processes or actors. This document outlines the specification for an event-driven architecture focusing on brokers and channels.
 
-**Constructor:**
+# 2. Event-Based Broker System Overview
 
-`QueueBroker(String name):` Initializes the QueueBroker with a given name. This constructor is intended to be called by subclasses.
-Interfaces:
+The broker acts as an intermediary, receiving and routing messages between actors. It manages communication by providing message queues for each actor and ensuring that messages are delivered based on event triggers.
+Key Components:
 
-**`AcceptListener:`** An interface for handling acceptance events.
+- Actors: Independent entities that perform tasks. Actors communicate via events.
+- Broker: The central message dispatcher that handles the routing and management of events.
+- Channels: The conduits through which events are transmitted. These are typically based on protocols like TCP for reliable delivery.
 
-`void accepted(MessageQueue queue):` Called when a message queue is accepted. Implementations of this method should handle the logic for when a new message queue connection is accepted.
-***Detailed Explanation:***
-*`Purpose:`* This method is invoked when a new message queue connection is successfully accepted.
-**Parameters:**
-`MessageQueue queue:` The message queue that has been accepted.
-`Usage:` Implement this method to define what actions should be taken when a new message queue connection is accepted. For example, you might want to start processing messages from the newly accepted queue.
-`Example:`
-```Java
-class MyAcceptListener implements QueueBroker.AcceptListener {
-    @Override
-    public void accepted(MessageQueue queue) {
-        System.out.println("New queue accepted: " + queue.getName());
-        // Start processing messages from the queue
+# 3. Broker Design
+
+The broker is designed to handle communication between distributed actors. Each actor registers with the broker, which maintains a message queue for each actor. The broker's responsibilities include:
+
+- Message Dispatching: Ensuring events reach the correct recipient.
+- Queue Management: Handling message queues for actors, ensuring FIFO (First In, First Out) delivery.
+- Channel Management: Setting up and managing channels, typically using TCP/IP to provide reliable and ordered message delivery.
+
+# 4. Event Channels
+
+Event channels facilitate communication between actors. A key requirement for the channels is ensuring reliable delivery. Channels are designed using TCP/IP to maintain the order and reliability of the messages.
+Code Design Explanation
+
+The code design for the event-oriented channel involves two main components:
+
+- Listener: Defines the actions that should occur when data is written, read, or when a channel is available.
+- Channel: Represents the communication channel that actors use to send and receive messages. It allows setting a listener for event notifications, reading from the channel, and writing to the channel.
+
+### Listener Interface
+
+The Listener interface specifies the event-based methods that the system will use to notify when data is written or read on a channel and when the channel is available for further communication.
+
+``` java
+
+interface Listener {
+    void written(int nbytes);  // Called when data has been written to the channel
+    void read(byte[] bytes);   // Called when data has been read from the channel
+    void available();          // Called when the channel becomes available
+}
+```
+- `written(int nbytes):` This method is called after data has been successfully written to the channel. It indicates how many bytes were written.
+- `read(byte[] bytes):` This method is triggered when new data is read from the channel. The received data is passed as a byte array.
+- `available():` Notifies when the channel becomes available for new operations, signaling that it is ready to read or write more data.
+
+
+### Channel Class
+
+The Channel class is responsible for handling low-level communication between actors. It offers methods to set a listener, read from the channel, and write to the channel.
+
+```java
+
+class Channel {
+    private Listener listener;
+
+    // Sets the listener to be notified for events on this channel
+    void setListener(Listener l) {
+        this.listener = l;
+    }
+
+    // Reads bytes from the channel into the provided byte array
+    int read(byte[] bytes, int offset, int length) {
+        // Logic to read data from the channel (TCP, etc.)
+        int bytesRead = 0;
+        // Notify listener that data has been read
+        if (listener != null) {
+            listener.read(bytes);
+        }
+        return bytesRead;
+    }
+
+    // Writes bytes to the channel from the provided byte array
+    int write(byte[] bytes, int offset, int length) {
+        // Logic to write data to the channel
+        int bytesWritten = 0;
+        // Notify listener that data has been written
+        if (listener != null) {
+            listener.written(bytesWritten);
+        }
+        return bytesWritten;
     }
 }
 ```
+- `setListener(Listener l):` This method sets the Listener that will receive notifications when events (such as data read or write) occur on the channel.
+- `read(byte[] bytes, int offset, int length):` Reads a specified number of bytes from the channel into the byte array starting from the given offset. After reading, it triggers the read() method of the listener.
+- `write(byte[] bytes, int offset, int length):` Writes a specified number of bytes to the channel from the byte array starting from the given offset. After writing, it triggers the written() method of the listener.
 
+### Design Considerations
 
-**`ConnectListener:`** An interface for handling connection events.
+- The channel operates asynchronously, using the Listener interface to notify when the channel is ready or when operations (read/write) have occurred. This event-driven model ensures the actors can remain responsive, handling communication events without blocking their tasks.
+- The Channel class allows data transmission between actors using reliable mechanisms (e.g., TCP), while the Listener provides a clean abstraction for handling asynchronous events triggered by these data transfers.
 
-`void connected(MessageQueue queue):` Called when a connection to a message queue is established. Implementations of this method should handle the logic for when a connection to another message queue is successfully made.
-**Detailed Explanation:**
-*`Purpose:`* This method is invoked when a connection to another message queue is successfully established.
-**Parameters:**
-`MessageQueue queue:` The message queue that has been connected to.
-`Usage:` Implement this method to define what actions should be taken when a connection to another message queue is established. For example, you might want to start sending messages to the connected queue.
-`Example:`
-```Java
-class MyConnectListener implements QueueBroker.ConnectListener {
-    @Override
-    public void connected(MessageQueue queue) {
-        System.out.println("Connected to queue: " + queue.getName());
-        // Start sending messages to the queue
-    }
-}
-```
+## 6. Consensus in Distributed Systems
 
-`void refused():` Called when a connection to a message queue is refused. Implementations of this method should handle the logic for when a connection attempt fails.
-**Detailed Explanation:**
-*`Purpose:`* This method is invoked when a connection attempt to a message queue is refused.
-**Parameters:** None.
-`Usage:` Implement this method to define what actions should be taken when a connection attempt fails. For example, you might want to retry the connection or log an error message.
+Reaching consensus is a challenge in distributed systems. The broker must ensure that all actors in a group agree on the state of a message or a decision.
 
-`Example:`
-```Java
-class MyConnectListener implements QueueBroker.ConnectListener {
-    @Override
-    public void refused() {
-        System.out.println("Connection refused.");
-        // Retry connection or log error
-    }
-}
-```
-**Methods:**
+# 7. Channel Design and Optimization
 
-`boolean bind(int port, AcceptListener listener):` Binds the QueueBroker to a specified port and sets an AcceptListener to handle acceptance events. This method is synchronized to ensure thread safety when binding to a port. It returns true if the binding is successful, otherwise false.
+Channels must be designed to handle network conditions effectively. To achieve this, the system employs several mechanisms:
 
-`boolean unbind(int port):` Unbinds the QueueBroker from a specified port. This method is synchronized to ensure thread safety when unbinding from a port. It returns true if the unbinding is successful, otherwise false.
+- Lossless and FIFO Delivery: Ensured by using TCP sockets for communication between actors.
+- Handling Network Partitions: In the event of network partitions, channels must buffer messages and attempt to deliver them when the network is restored.
 
-`boolean connect(String name, int port, ConnectListener listener):` Connects the QueueBroker to another message queue identified by name and port, and sets a ConnectListener to handle connection events. This method is synchronized to ensure thread safety when establishing connections. It returns true if the connection is successful, otherwise false.
+Channels also utilize round-trip messaging to handle the voluntary closing of queues and ensure actors are notified when channels are closed, reducing the risk of message loss.
 
-**MessageQueue Class**
-The MessageQueue class is a class that provides a framework for managing individual message queues. It includes methods for sending and receiving messages, setting listeners, and closing the queue. The class also defines an interface for handling message and closure events. This class is designed to be thread-safe and should handle synchronization to ensure consistent state across multiple threads.
-
-**Constructor:**
-
-`MessageQueue(String name):` Initializes the MessageQueue with a given name. This constructor is intended to be called by subclasses.
-Interface:
-
-`Listener:` An interface for handling message and closure events.
-**`void received(byte[] msg):`** Called when a message is received. Implementations of this method should handle the logic for processing received messages.
-**Detailed Explanation:**
-`Purpose:` This method is invoked when a message is received by the message queue.
-**`Parameters:`**
-`byte[] msg:` The message received in byte array format.
-`Usage:` Implement this method to define what actions should be taken when a message is received. For example, you might want to process the message or forward it to another component.
-`Example:`
-
-```Java
-class MyListener implements MessageQueue.Listener {
-    @Override
-    public void received(byte[] msg) {
-        System.out.println("Message received: " + new String(msg));
-        // Process the message
-    }
-}
-```
-**`void closed():`** Called when the message queue is closed. Implementations of this method should handle the logic for when the message queue is closed.
-**Detailed Explanation:**
-`Purpose:` This method is invoked when the message queue is closed.
-`Parameters:` None.
-`Usage:` Implement this method to define what actions should be taken when the message queue is closed. For example, you might want to release resources or notify other components.
-`Example:`
-
-**Methods:**
-
-`void setListener(Listener l):` Sets a Listener to handle message and closure events. This method is synchronized to ensure thread safety when setting the listener.
-
-`boolean send(byte[] bytes):` Sends a message represented by a byte array through the message queue. This method is synchronized to ensure thread safety when sending messages. It returns true if the message is successfully sent, otherwise false. There is also the same method but with additionnal parameters : offset and length.
-
-`void close():` Closes the message queue. This method is synchronized to ensure thread safety when closing the queue.
-
-`boolean closed():` Checks if the message queue is closed. This method is synchronized to ensure thread safety when checking the state of the queue. It returns true if the queue is closed, otherwise false.
-
-**Thread Safety and Synchronization**
-Both QueueBroker and MessageQueue classes are designed to be thread-safe. This is achieved by synchronizing methods that modify the state of the objects or perform critical operations. Synchronization ensures that only one thread can execute these methods at a time, preventing race conditions and ensuring consistent state across multiple threads.
-
-**Thinking ownership**
-
-Asynchronous sending and performance requires you to think about the ownership transfer during the send operation. To avoid a copy or a definitive owner transfer, the queue must notify when a send operation is finished, returning the ownership of the buffer. It is also possible to use cookies to give a context to the message queue like how websites do. We could also replace the table of bytes by a class Message that will contain all the context and information needed, this will make it easier for further development by using classes that extend Message. This is all to manage aliasing. The best method that we will implement here is making sure that Message is notified when it is being sent, by using the messages as the receivers of the notification "sent", seems to separate better the ownership management from the reception of messages. It will also ensure that the messages are sent in order. Managing ownership in this application is important because it helps maintain data integrity and ensures that resources are properly allocated and released, preventing potential memory leaks and race conditions. 
-
-
-**Summary**
-The QueueBroker and MessageQueue abstract classes provide a structured way to manage message queues and their interactions. The QueueBroker class handles the higher-level operations of binding, unbinding, and connecting to message queues, while the MessageQueue class handles the lower-level operations of sending and receiving messages, as well as managing listeners for these events. Both classes are designed to be thread-safe, with synchronized methods to ensure consistent state across multiple threads. The use of interfaces allows for flexible handling of acceptance, connection, message reception, and closure events.
