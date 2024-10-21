@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import event.impl.Broker;
 import event.impl.Channel;
+import event.impl.ChannelListener;
+import event.impl.ConnectListener;
 import event.impl.Task;
 import mixed.impl.Message;
 
@@ -11,16 +13,16 @@ public class EventDrivenSystemTest {
 
     @Test
     public void testBrokerBindAndAccept() {
-        Broker broker = new Broker("TestBroker");
+        Broker broker = new Broker("TestBrokerBindAndAccept");  // Use a unique name
         final boolean[] isAccepted = {false};
 
         broker.bind(8080, queue -> {
-            isAccepted[0] = true;  
+            isAccepted[0] = true;
         });
 
-        broker.connect("localhost", 8080, new Broker.ConnectListener() {
+        broker.connect("localhost", 8080, new ConnectListener() {
             @Override
-            public void connected(event.abst.Channel queue) {
+            public void connected(event.impl.Channel queue) {
             }
 
             @Override
@@ -37,7 +39,7 @@ public class EventDrivenSystemTest {
         Channel channel = new Channel();
         final boolean[] messageReceived = {false};
 
-        channel.setListener(new Channel.Listener() {
+        channel.setListener(new ChannelListener() {
             @Override
             public void received(byte[] bytes) {
                 assertEquals("TestMessage", new String(bytes), "Received message should match the sent message.");
@@ -45,16 +47,13 @@ public class EventDrivenSystemTest {
             }
 
             @Override
-            public void closed() {
-            }
+            public void closed() {}
 
             @Override
-            public void sent(Message message) {
-            }
+            public void sent(byte[] bytes) {}
         });
 
-        Message message = new Message("TestMessage".getBytes());
-        channel.send(message);
+        channel.send("TestMessage".getBytes());
 
         assertTrue(messageReceived[0], "The message should be received through the channel.");
     }
@@ -65,7 +64,7 @@ public class EventDrivenSystemTest {
         final boolean[] taskRan = {false};
 
         task.post(() -> {
-            taskRan[0] = true;  
+            taskRan[0] = true;
         });
 
         assertTrue(taskRan[0], "The task should have run the posted Runnable.");
@@ -76,11 +75,11 @@ public class EventDrivenSystemTest {
 
     @Test
     public void testBrokerConnectAndSendMessage() {
-        Broker broker = new Broker("TestBroker");
+        Broker broker = new Broker("TestBrokerConnectAndSendMessage");  // Use a unique name
         final boolean[] messageReceived = {false};
 
         broker.bind(8080, queue -> {
-            queue.setListener(new Channel.Listener() {
+            queue.setListener(new ChannelListener() {
                 @Override
                 public void received(byte[] bytes) {
                     assertEquals("Hello", new String(bytes), "Broker should receive the correct message.");
@@ -91,15 +90,14 @@ public class EventDrivenSystemTest {
                 public void closed() {}
 
                 @Override
-                public void sent(Message message) {}
+                public void sent(byte[] bytes) {}
             });
         });
 
-        broker.connect("localhost", 8080, new Broker.ConnectListener() {
+        broker.connect("localhost", 8080, new ConnectListener() {
             @Override
-            public void connected(event.abst.Channel queue) {
-                Message message = new Message("Hello".getBytes());
-                queue.send(message);
+            public void connected(event.impl.Channel queue) {
+                queue.send("Hello".getBytes());
             }
 
             @Override

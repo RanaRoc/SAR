@@ -1,19 +1,15 @@
 package event.abst;
 
+import event.impl.ChannelListener;
 import mixed.impl.Message;
 
 public abstract class Channel {
-	public interface Listener {
-		void received(byte[] bytes);
+	
+	public abstract void setListener(ChannelListener listener);
 
-		void closed();
+	public abstract boolean send(byte[] bytes);
 
-		void sent(Message message);
-	}
-
-	public abstract void setListener(Listener listener);
-
-	public abstract void send(Message message);
+	public abstract boolean receive(byte[] bytes);
 
 	public abstract void close();
 
